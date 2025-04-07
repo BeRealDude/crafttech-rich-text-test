@@ -5,6 +5,7 @@ import Control from "./components/control/Control";
 
 function App() {
   const [tool, setTool] = useState("cursor");
+
   const stageRef = useRef(null);
   return (
     <>
