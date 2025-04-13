@@ -6,6 +6,7 @@ const HtmlText = forwardRef(({ html, id, fontSize, letterSpacing, fontWeight, fo
   // console.log(id, 'id')
   return (
     <div
+      // contentEditable
       id={`htmltext_${id}`}
       dangerouslySetInnerHTML={{ __html: html }}
       style={{
@@ -20,6 +21,8 @@ const HtmlText = forwardRef(({ html, id, fontSize, letterSpacing, fontWeight, fo
         lineHeight: lineHeight,
         border: 'none',
         padding: '0px',
+        overflowWrap: 'break-word',
+        whiteSpace: 'pre-wrap'
       }}
       ref={ref}
     ></div>

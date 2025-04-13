@@ -23,7 +23,6 @@ interface ShapeProps {
   updateFigure: (id: string, data: { text: string, html: string }) => void;
 }
 
-
 const Shape: FC<ShapeProps> = (props) => {
   const { x, y, width, height, tool, html, id, text, fontSize, letterSpacing, fontWeight, fontFamily, lineHeight, updateFigure } = props;
 
@@ -33,18 +32,8 @@ const Shape: FC<ShapeProps> = (props) => {
   const groupRef = useRef<Konva.Group>(null);
   const imageRef = useRef<Konva.Image | null>(null);
   const htmlRef = useRef<HTMLDivElement | null>(null);
-
-  console.log(htmlRef, 'htmlRef')
-  console.log(imageRef, 'imageRef')
-
+ 
   const renderImage = async () => {
-
-    // if (imageRef.current) {
-    //   imageRef.current.destroy();
-    //   imageRef.current = null;
-    // }
-
-
 
     console.log(html, 'html передан в HtmlText')
 
@@ -64,10 +53,13 @@ const Shape: FC<ShapeProps> = (props) => {
       if (innerhtml) {
 
         const canvas = await html2canvas(htmltext, {
-          backgroundColor: "rgba(0,0,0,0)",
+          backgroundColor: "rgba(0, 0, 0, 0)",
+          // width: width,
+          // height: height,
+          foreignObjectRendering: false,
+          removeContainer: true
+
         });
-        
-        console.log(canvas, 'canvas')
 
         const shape = new Konva.Image({
           x: 0,
@@ -75,14 +67,19 @@ const Shape: FC<ShapeProps> = (props) => {
           scaleX: 1 / window.devicePixelRatio,
           scaleY: 1 / window.devicePixelRatio,
           image: canvas,
-          fontSize: fontSize,
-          // border: 0,
-          padding: '0px',
+          
         });
         
         groupRef.current?.add(shape);
-       
+
+        if (imageRef.current) {
+          imageRef.current?.destroy();
+          imageRef.current = null;
+        }
+
         imageRef.current = shape;
+        
+        imageRef.current?.getLayer()?.batchDraw();
         
       } else return console.error('innerhtml не найден');
     } else return;
@@ -90,7 +87,16 @@ const Shape: FC<ShapeProps> = (props) => {
 
   useEffect(() => {
     renderImage();
-  }, [isEditing]);
+    
+    if(!value) {
+      if (imageRef.current) {
+        imageRef.current?.destroy();
+        imageRef.current = null;
+      }
+    }
+    
+  }, [props]);
+  
 
   const handleClick = () => {
     
@@ -101,19 +107,20 @@ const Shape: FC<ShapeProps> = (props) => {
     } else {
       
       setIsEditing((prev) => !prev);
-
-      if (imageRef.current) {
-        if (isEditing) {
-          imageRef.current.show();
-        } else {
-          imageRef.current.hide();
-        }
-      } else return;
+      
+      // if (imageRef.current) {
+      //   if (isEditing) {
+      //     imageRef.current.show();
+      //   } else {
+      //     imageRef.current.hide();
+      //   }
+      // } else return;
     }
   };
 
-  
-  
+
+ 
+ 
   
   const handleInput = (e: ChangeEvent<HTMLTextAreaElement>) => {
     setValue(e.target.value);
@@ -127,7 +134,9 @@ const Shape: FC<ShapeProps> = (props) => {
 
   
   function handlerOnBlur() {
-    // setIsEditing((prev) => !prev);
+    setIsEditing((prev) => !prev);
+
+    
   }
 
   
@@ -135,10 +144,10 @@ const Shape: FC<ShapeProps> = (props) => {
   return (
     <>
       <Group x={x} y={y} onClick={handleClick} ref={groupRef} draggable>
+      
         <Rect stroke={"black"} width={width} height={height} />
-        
           <Html>
-            {isEditing ? <textarea placeholder="Введите текст" value={value} onChange={handleInput} onBlur={handlerOnBlur} style={{
+            {isEditing && <textarea value={value} placeholder="Введите текст" onChange={handleInput} onBlur={handlerOnBlur} style={{
               width:width,
               height:height,
               fontSize: fontSize,
@@ -147,7 +156,7 @@ const Shape: FC<ShapeProps> = (props) => {
               fontWeight: fontWeight,
               fontFamily: fontFamily,
               border: '0px',
-              padding: '0px',
+              padding: '1px 0px 0px 0px',
               margin: 0,
               resize: 'none',
               overflow: 'hidden',
@@ -157,12 +166,12 @@ const Shape: FC<ShapeProps> = (props) => {
               backgroundColor: 'transparent',
               // padding: '2px 0px 0px 1px',
 
-            }}/>
-            :
-            <HtmlText ref={htmlRef} html={html} id={id} width={width} fontSize={fontSize} letterSpacing={letterSpacing} fontWeight={fontWeight} fontFamily={fontFamily} lineHeight={lineHeight}/>
+            }}
+            
+            />
             }
+            <HtmlText ref={htmlRef} html={html} id={id} width={width} fontSize={fontSize} letterSpacing={letterSpacing} fontWeight={fontWeight} fontFamily={fontFamily} lineHeight={lineHeight}/>
           </Html>
-           
       </Group>
       
     </>
